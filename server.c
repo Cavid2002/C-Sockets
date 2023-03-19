@@ -35,14 +35,12 @@ void* send_msg(void* args){
 }
 
 void start_chat(int fd){
-    char w_buff[BUFF_SIZE] = "Salam";
-    char r_buff[BUFF_SIZE];
-    write(fd, w_buff, BUFF_SIZE);
+    char* welcome_msg = "Starting a chat...";
+    write(fd, welcome_msg, strlen(welcome_msg));
     pthread_t t1;
     pthread_create(&t1, NULL, show_msg, &fd);
-    int fd2 = fd;
     send_msg(&fd);
-    
+    pthread_join(t1, NULL);
 }
 
 int main(int argc, char* argv[]){

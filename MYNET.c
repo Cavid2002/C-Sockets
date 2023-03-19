@@ -30,6 +30,12 @@ int create_socket(int domain, int type){
     return fd;
 }
 
+int start_listening(int fd, int num){
+    if(listen(fd, num) == -1){
+        error("Unable to listen!");
+    }
+}
+
 int bind_to_port(int fd, unsigned int family, unsigned short port){
     sockaddr_in name;
     name.sin_family = family;
