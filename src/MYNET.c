@@ -1,17 +1,4 @@
-#include<sys/socket.h>
-#include<arpa/inet.h>
-#include<signal.h>
-#include<unistd.h>
-
-
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-
-
-typedef struct sockaddr sockaddr;
-typedef struct sockaddr_in sockaddr_in;
-typedef struct sockaddr_storage sockaddr_storage;
+#include"MYNET.h"
 
 
 extern int listner_fd;
