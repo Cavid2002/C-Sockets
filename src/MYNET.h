@@ -14,7 +14,7 @@ typedef struct sockaddr sockaddr;
 typedef struct sockaddr_in sockaddr_in;
 typedef struct sockaddr_storage sockaddr_storage;
 
-int listner_fd;
+extern int listner_fd;
 
 void error(const char* msg);
 
