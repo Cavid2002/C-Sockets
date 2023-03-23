@@ -1,7 +1,6 @@
 #include"MYNET.h"
 #define Q_SIZE 10
 
-unsigned int cln_fd;
 
 typedef struct{
     unsigned int ip_family;
