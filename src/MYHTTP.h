@@ -16,7 +16,7 @@ typedef struct{
     const char* filename;
     const char* method;
     const char* path;
-}route;
+}http_route;
 
 
 void server_init(http_server* serv);
