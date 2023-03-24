@@ -1,6 +1,6 @@
 #include"MYNET.h"
 
-
+int listner_fd;
 
 void error(const char* msg){
     close(listner_fd);
