@@ -8,7 +8,6 @@ typedef struct{
     unsigned short port;
     unsigned short q_size;
     unsigned int listening_fd;
-    unsigned int client_fd;
 } http_server;
 
 typedef struct{
@@ -19,4 +18,6 @@ typedef struct{
 
 
 void server_init(http_server* serv);
-
+void create_route(http_route* rt);
+int read_request(int fd, char* request);
+void create_response(int fd, char* buff);

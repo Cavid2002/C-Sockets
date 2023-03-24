@@ -10,14 +10,16 @@ void handler(int num){
 }
 
 void create_response(int fd,char response[]){
-    write(fd, response, strlen(response)+1);
+    write(fd, response, strlen(response));
 }
 
 void fill_render_buffer(char buff[]){
     char temp[100];
     int c = 1;
-    strcpy(buff, "HTTP/1.0 200 OK GET 127.0.0.1:3340/test \r\n\r\n");
-    FILE* file = fopen("../index.html","r");
+    memset(buff, 0, BUFF_SIZE);
+    strcpy(buff,"HTTP/1.0 OK 200\r\n\r\n");
+    FILE* file = fopen("../html/index.html","r");
+    rewind(file);
     while(fgets(temp,100,file) != NULL){
         strcat(buff, temp);
     }
@@ -48,14 +50,12 @@ int main(int argc, char* argv[]){
     char arr[BUFF_SIZE];
     fprintf(stdout, "[INFO]SERVER listening on port: 127.0.0.1:3340\n");
     fflush(stdout);
-    fill_render_buffer(arr);
     pthread_t t1;
     while(1){
         int connect_fd = accept_connection(listner_fd);
-        pthread_create(&t1, NULL, get_data, &connect_fd);
+        fill_render_buffer(arr);
         create_response(connect_fd,arr);
-        close(connect_fd);
-        pthread_detach(t1);   
+        close(connect_fd);  
     } 
     
     close(listner_fd);
