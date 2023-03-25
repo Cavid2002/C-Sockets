@@ -1,7 +1,7 @@
 #include"MYHTTP.h"
 
-#define BUFF_SIZE 5000
-#define REQ_SIZE 500
+#define BUFF_SIZE 10000
+#define REQ_SIZE 1000
 #define ROUTE_SIZE 20
 
 http_route* arr[ROUTE_SIZE];
@@ -12,28 +12,47 @@ void create_route(http_route* rt){
     count++;
 }
 
-unsigned int getf_size(FILE* file){
-    int c = 0;
-    while(fgetc(file) != EOF){
-        c++;
+int find_file_by_path(char* url_path){
+    for(int i = 0; i < count; i++){
+        if(strcmp(arr[i]->path, url_path) == 0){
+            return i;
+        }
     }
-    rewind(file);
-    return c;
+    return -1;
 }
 
-void fill_render_buffer(http_route* rt, char* buff){
+void fill_render_buffer(char* url_path, char* buff){
     char temp[100];
     memset(temp, 0, 100);
     memset(buff, 0, BUFF_SIZE);
-    FILE* html = fopen(rt->filename, "r");
-    if(html == NULL){
-        error("File doesn't exist");
+    char* ptr = strchr(url_path, '.');
+    if(ptr != NULL){
+        sprintf(temp, "../templates%s", url_path);
+        FILE* front = fopen(temp, "r");
+        if(front == NULL){
+            error("File doesn't exist");
+        }
+        strcpy(buff, "HTTP/2.0 200 OK\r\n\r\n"); 
+        while(fgets(temp, 100, front) != NULL){
+            strcat(buff, temp);
+        }
+        fclose(front);
     }
-    strcpy(buff, "HTTP/2.0 200 OK\r\nContent-Type: text/html\r\n\r\n"); 
-    while(fgets(temp, 100, html) != NULL){
-        strcat(buff, temp);
+    else{
+        int index = find_file_by_path(url_path);
+        if(index == -1) return;
+        sprintf(temp, "../templates/%s", arr[index]->filename);
+        FILE* front = fopen(temp, "r");
+        if(front == NULL){
+            error("File doesn't exist");
+        }
+        strcpy(buff, "HTTP/2.0 200 OK\r\n\r\n"); 
+        while(fgets(temp, 100, front) != NULL){
+            strcat(buff, temp);
+        }
+        fclose(front);
     }
-    fclose(html);
+    
 }
 
 void create_response(int cln_fd , char* buff){  
@@ -42,24 +61,22 @@ void create_response(int cln_fd , char* buff){
 }
 
 
-int read_request(int fd, char* request){
+char* read_request(int fd, char* request){
     int c = read(fd, request, REQ_SIZE);
     if(c == -1){
         error("Unable to read");
     }
     request[c] = '\0'; 
-    fprintf(stdout, "[INFO]Request data:\n%s", request);
+    fprintf(stdout, "[INFO]Request data:\n\n%s", request);
     char* ptr1 = strchr(request, '/');
     char* ptr2 = strchr(ptr1,' ');
     *ptr2 = '\0';
     fprintf(stdout, "[INFO]URL path: %s\n", ptr1);
     fprintf(stdout, "\n==================================\n");
-    for(int i = 0; i < count; i++){
-        if(strcmp(ptr1,arr[i]->path) == 0){
-            return i;
-        }
+    if(strcmp(ptr1, "/favicon.ico") == 0){
+        return NULL;
     }
-    return -1;
+    return ptr1;
 }
 
 void server_init(http_server* serv){
@@ -74,9 +91,9 @@ void server_init(http_server* serv){
     while(1){
         
         int cln_fd = accept_connection(serv->listening_fd);
-        int index = read_request(cln_fd, request);
-        if(index == -1) continue;
-        fill_render_buffer(arr[index], buff);
+        char* prt = read_request(cln_fd, request);
+        if(prt == NULL) continue;
+        fill_render_buffer(prt, buff);
         create_response(cln_fd, buff);
         
     }

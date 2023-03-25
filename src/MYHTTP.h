@@ -19,5 +19,5 @@ typedef struct{
 
 void server_init(http_server* serv);
 void create_route(http_route* rt);
-int read_request(int fd, char* request);
+char* read_request(int fd, char* request);
 void create_response(int fd, char* buff);

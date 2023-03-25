@@ -16,9 +16,9 @@ int main(){
     serv.port = 3340;
 
 
-    http_route r1 = {.filename = "../html/index.html",.method = "GET", .path="/test"};
-    http_route r2 = {.filename = "../html/index2.html",.method = "GET", .path="/test2"};
-    http_route r3 = {.filename = "../html/index3.html",.method = "GET", .path="/test3"};
+    http_route r1 = {.filename = "index.html",.method = "GET", .path="/test"};
+    http_route r2 = {.filename = "index2.html",.method = "GET", .path="/test2"};
+    http_route r3 = {.filename = "index3.html",.method = "GET", .path="/test3"};
     create_route(&r1);
     create_route(&r2);
     create_route(&r3);
