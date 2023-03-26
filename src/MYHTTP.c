@@ -1,6 +1,6 @@
 #include"MYHTTP.h"
 
-#define BUFF_SIZE 10000
+#define BUFF_SIZE 10000000
 #define REQ_SIZE 1000
 #define ROUTE_SIZE 20
 
@@ -22,8 +22,8 @@ int find_file_by_path(char* url_path){
 }
 
 void fill_render_buffer(char* url_path, char* buff){
-    char temp[100];
-    memset(temp, 0, 100);
+    char temp[101];
+    memset(temp, 0, 101);
     memset(buff, 0, BUFF_SIZE);
     char* ptr = strchr(url_path, '.');
     if(ptr != NULL){
@@ -32,9 +32,12 @@ void fill_render_buffer(char* url_path, char* buff){
         if(front == NULL){
             error("File doesn't exist");
         }
-        strcpy(buff, "HTTP/2.0 200 OK\r\n\r\n"); 
-        while(fgets(temp, 100, front) != NULL){
-            strcat(buff, temp);
+        strcpy(buff, "HTTP/2.0 200 OK\r\n\r\n");
+        int c;
+        while(c > 0){
+            c = read(front->_fileno, temp, 100);
+            temp[c] = '\0';
+            strncat(buff, temp, c);
         }
         fclose(front);
     }
