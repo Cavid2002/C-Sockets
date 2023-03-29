@@ -1,7 +1,8 @@
 #include"MYHTTP.h"
 #include<fcntl.h>
-#define BUFF_SIZE 5000
-#define REQ_SIZE 2000
+
+#define BUFF_SIZE 1000
+#define REQ_SIZE 1000
 #define ROUTE_SIZE 20
 
 http_route* arr[ROUTE_SIZE];
@@ -33,7 +34,7 @@ void create_response(char* url_path, char* buff, int cln_fd){
     memset(buff, 0, BUFF_SIZE);
     char* ptr = strchr(url_path, '.');
     if(ptr != NULL){
-        sprintf(temp, "../templates%s", url_path);
+        sprintf(temp, "templates%s", url_path);
         int front_fd = open(temp, O_RDONLY, 0700);
         if(front_fd == -1){
             error("File doesn't exist");
@@ -50,7 +51,7 @@ void create_response(char* url_path, char* buff, int cln_fd){
     else{
         int index = find_file_by_path(url_path);
         if(index == -1) return;
-        sprintf(temp, "../templates/%s", arr[index]->filename);
+        sprintf(temp, "templates/%s", arr[index]->filename);
         int front_fd = open(temp, O_RDONLY, 0700);
         if(front_fd == -1){
             error("File doesn't exist");

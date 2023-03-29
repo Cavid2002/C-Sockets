@@ -1,4 +1,4 @@
 test.*
-/bin
+/bin/*
 *.o
 /templates/video
