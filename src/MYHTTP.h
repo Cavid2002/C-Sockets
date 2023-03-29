@@ -1,5 +1,8 @@
 #include"MYNET.h"
 #define Q_SIZE 10
+#define BUFF_SIZE 1000
+#define REQ_SIZE 1000
+#define ROUTE_SIZE 20
 
 
 typedef struct{

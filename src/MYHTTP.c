@@ -1,9 +1,6 @@
 #include"MYHTTP.h"
 #include<fcntl.h>
 
-#define BUFF_SIZE 1000
-#define REQ_SIZE 1000
-#define ROUTE_SIZE 20
 
 http_route* arr[ROUTE_SIZE];
 int count = 0;
