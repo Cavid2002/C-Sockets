@@ -1,11 +1,17 @@
 #include"MYHTTP.h"
-
-#define BUFF_SIZE 10000000
-#define REQ_SIZE 1000
+#include<fcntl.h>
+#define BUFF_SIZE 5000
+#define REQ_SIZE 2000
 #define ROUTE_SIZE 20
 
 http_route* arr[ROUTE_SIZE];
 int count = 0;
+
+void handler(int num){
+    close(listner_fd);
+    fprintf(stdout, "\n[INFO]Closing connection...\n");
+    exit(EXIT_SUCCESS);
+}
 
 void create_route(http_route* rt){
     arr[count] = rt;
@@ -21,45 +27,43 @@ int find_file_by_path(char* url_path){
     return -1;
 }
 
-void fill_render_buffer(char* url_path, char* buff){
-    char temp[101];
-    memset(temp, 0, 101);
+void create_response(char* url_path, char* buff, int cln_fd){
+    char temp[50];
+    memset(temp, 0, 50);
     memset(buff, 0, BUFF_SIZE);
     char* ptr = strchr(url_path, '.');
     if(ptr != NULL){
         sprintf(temp, "../templates%s", url_path);
-        FILE* front = fopen(temp, "r");
-        if(front == NULL){
+        int front_fd = open(temp, O_RDONLY, 0700);
+        if(front_fd == -1){
             error("File doesn't exist");
         }
         strcpy(buff, "HTTP/2.0 200 OK\r\n\r\n");
-        int c;
+        write(cln_fd, buff, strlen(buff));
+        int c = 1;
         while(c > 0){
-            c = read(front->_fileno, temp, 100);
-            temp[c] = '\0';
-            strncat(buff, temp, c);
+            c = read(front_fd , buff, BUFF_SIZE);
+            write(cln_fd, buff, c);
         }
-        fclose(front);
+        close(front_fd);
     }
     else{
         int index = find_file_by_path(url_path);
         if(index == -1) return;
         sprintf(temp, "../templates/%s", arr[index]->filename);
-        FILE* front = fopen(temp, "r");
-        if(front == NULL){
+        int front_fd = open(temp, O_RDONLY, 0700);
+        if(front_fd == -1){
             error("File doesn't exist");
         }
-        strcpy(buff, "HTTP/2.0 200 OK\r\n\r\n"); 
-        while(fgets(temp, 100, front) != NULL){
-            strcat(buff, temp);
+        strcpy(buff, "HTTP/2.0 200 OK\r\n\r\n");
+        write(cln_fd, buff, strlen(buff));
+        int c = 1;
+        while(c > 0){
+            c = read(front_fd, buff, BUFF_SIZE);
+            write(cln_fd, buff, c);
         }
-        fclose(front);
+        close(front_fd);
     }
-    
-}
-
-void create_response(int cln_fd , char* buff){  
-    write(cln_fd,buff,strlen(buff)); 
     close(cln_fd);
 }
 
@@ -83,6 +87,7 @@ char* read_request(int fd, char* request){
 }
 
 void server_init(http_server* serv){
+    signal(SIGINT, handler);
     char* buff = (char*)malloc(BUFF_SIZE);
     char* request = (char*)malloc(REQ_SIZE);
     serv->listening_fd = create_socket(serv->ip_family, serv->trcp_protocol);
@@ -96,8 +101,7 @@ void server_init(http_server* serv){
         int cln_fd = accept_connection(serv->listening_fd);
         char* prt = read_request(cln_fd, request);
         if(prt == NULL) continue;
-        fill_render_buffer(prt, buff);
-        create_response(cln_fd, buff);
+        create_response(prt, buff, cln_fd);
         
     }
 

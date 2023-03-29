@@ -20,4 +20,4 @@ typedef struct{
 void server_init(http_server* serv);
 void create_route(http_route* rt);
 char* read_request(int fd, char* request);
-void create_response(int fd, char* buff);
+void create_response(char* url_path, char* buff, int cln_fd);
