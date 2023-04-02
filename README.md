@@ -1,2 +1,2 @@
 # C-Sockets
-Socket-Programming on C
+Backend microframework on C using Unix-sockets
