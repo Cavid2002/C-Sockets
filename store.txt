@@ -1,0 +1,3 @@
+username=test
+phone=2222
+pass=test

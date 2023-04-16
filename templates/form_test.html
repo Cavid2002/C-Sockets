@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+    <title>C web server</title>
+
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+<div>
+    <h1>Form-Test</h1>
+</div>
+<div>
+    <form action="/form-test" method="POST" enctype="text/plain">
+        <table>
+            <tr>
+                <td><label for="username">Enter Your username</label></td>
+                <td><input type="text" name="username" id="username"></td>
+            </tr>
+
+            <tr>
+                <td><label for="phone">Enter Your phone number:</label></td>
+                <td><input type="number" name="phone" id="phone"></td>
+            </tr>
+
+            <tr>
+                <td><label for="pass">Enter Your phone number:</label></td>
+                <td><input type="password" name="pass" id="pass"></td>
+            </tr>
+
+            <tr>
+                <td><button type="submit">Send form</button></td>
+                <td></td>
+            </tr>
+
+        </table>
+    </form>
+</div>
+</body>
+</html>

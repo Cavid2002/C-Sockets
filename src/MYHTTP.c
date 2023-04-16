@@ -66,15 +66,28 @@ void create_response(char* url_path, char* buff, int cln_fd){
 }
 
 
-char* read_request(int fd, char* request){
+char* read_request(int fd, char* request, unsigned short* method){
     int c = read(fd, request, REQ_SIZE);
+    char* ptr1;
+    char* ptr2;
     if(c == -1){
         error("Unable to read");
     }
-    request[c] = '\0'; 
+    request[c] = '\0';
+    *method = GET; 
+    if(request[0] == 'P'){
+        printf("HERE\n");
+        *method = POST;
+        ptr1 = strstr(request, "\r\n\r\n");
+        ptr1 = ptr1 + 4;
+        int store = open("store.txt", O_RDWR|O_TRUNC|O_CREAT, 0777);
+        write(store, ptr1, c - (ptr1 - request));
+        close(store);
+    }  
+        
     fprintf(stdout, "[INFO]Request data:\n\n%s", request);
-    char* ptr1 = strchr(request, '/');
-    char* ptr2 = strchr(ptr1,' ');
+    ptr1 = strchr(request, '/');
+    ptr2 = strchr(ptr1,' ');
     *ptr2 = '\0';
     fprintf(stdout, "[INFO]URL path: %s\n", ptr1);
     fprintf(stdout, "\n==================================\n");
@@ -86,6 +99,7 @@ char* read_request(int fd, char* request){
 
 void server_init(http_server* serv){
     signal(SIGINT, handler);
+    unsigned short method;
     char* buff = (char*)malloc(BUFF_SIZE);
     char* request = (char*)malloc(REQ_SIZE);
     serv->listening_fd = create_socket(serv->ip_family, serv->trcp_protocol);
@@ -97,7 +111,7 @@ void server_init(http_server* serv){
     while(1){
         
         int cln_fd = accept_connection(serv->listening_fd);
-        char* prt = read_request(cln_fd, request);
+        char* prt = read_request(cln_fd, request, &method);
         if(prt == NULL) continue;
         create_response(prt, buff, cln_fd);
         

@@ -1,8 +1,12 @@
 #include"MYNET.h"
+
 #define Q_SIZE 10
 #define BUFF_SIZE 1000
 #define REQ_SIZE 1000
 #define ROUTE_SIZE 20
+#define METHOD_SIZE 10
+#define GET 0
+#define POST 1
 
 
 typedef struct{
@@ -15,12 +19,16 @@ typedef struct{
 
 typedef struct{
     const char* filename;
-    const char* method;
+    unsigned short method;
     const char* path;
 }http_route;
 
 
+extern http_route* arr[ROUTE_SIZE];
+extern int count;
+
 void server_init(http_server* serv);
 void create_route(http_route* rt);
-char* read_request(int fd, char* request);
+char* read_request(int fd, char* request, unsigned short* method);
 void create_response(char* url_path, char* buff, int cln_fd);
+
