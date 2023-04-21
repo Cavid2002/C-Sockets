@@ -46,75 +46,87 @@ void create_response(char* url_path, char* buff, int cln_fd){
         close(front_fd);
     }
     else{
-        int index = find_file_by_path(url_path);
-        if(index == -1) return;
-        sprintf(temp, "templates/%s", arr[index]->filename);
-        int front_fd = open(temp, O_RDONLY, 0700);
-        if(front_fd == -1){
-            error("File doesn't exist");
-        }
-        strcpy(buff, "HTTP/2.0 200 OK\r\n\r\n");
-        write(cln_fd, buff, strlen(buff));
+        // int index = find_file_by_path(url_path);
+        // if(index == -1) return;
+        // sprintf(temp, "templates/%s", arr[index]->filename);
+        // int front_fd = open(temp, O_RDONLY, 0700);
+        // if(front_fd == -1){
+        //     error("File doesn't exist");
+        // }
+        // strcpy(buff, "HTTP/1.0 200 OK\r\n\r\n");
+        // int c = write(cln_fd, buff, strlen(buff));
+        // while(c > 0){
+        //     printf("\n%d\n", c);
+        //     c = read(front_fd, buff, BUFF_SIZE);
+        //     write(cln_fd, buff, c);
+        // }
+        // close(front_fd);
         int c = 1;
-        while(c > 0){
-            c = read(front_fd, buff, BUFF_SIZE);
-            write(cln_fd, buff, c);
-        }
-        close(front_fd);
+        int front_fd = open("templates/form_test.html", O_RDONLY, 0700);
+        if(front_fd == -1) error("File doesn't exists");
+        char* msg = "HELLO";
+        write(cln_fd, msg, strlen(msg));
+        // while(c > 0){
+        //     printf("\n%d\n", c);
+        //     c = read(front_fd, buff, BUFF_SIZE);
+        //     write(cln_fd, buff, c);
+        // }
+        close(cln_fd);
     }
-    close(cln_fd);
 }
 
 
-char* read_request(int fd, char* request, unsigned short* method){
-    int c = read(fd, request, REQ_SIZE);
-    char* ptr1;
-    char* ptr2;
-    if(c == -1){
-        error("Unable to read");
-    }
-    request[c] = '\0';
-    *method = GET; 
-    if(request[0] == 'P'){
-        printf("HERE\n");
-        *method = POST;
-        ptr1 = strstr(request, "\r\n\r\n");
-        ptr1 = ptr1 + 4;
-        int store = open("store.txt", O_RDWR|O_TRUNC|O_CREAT, 0777);
-        write(store, ptr1, c - (ptr1 - request));
-        close(store);
-    }  
-        
-    fprintf(stdout, "[INFO]Request data:\n\n%s", request);
-    ptr1 = strchr(request, '/');
-    ptr2 = strchr(ptr1,' ');
+void read_request(int fd, http_request* request, unsigned short* method){
+    memset(request->request_data, 0, REQ_SIZE);
+    memset(request->path, 0, PATH_SIZE);
+    int c = read(fd, request->request_data, REQ_SIZE);
+    if(c < 0) error("Unable to read");
+
+    if(request->request_data[0] == 'P'){ *method = POST; }
+    else { *method = GET; }
+    
+
+    char* ptr1;char* ptr2;
+    
+    ptr1 = strchr(request->request_data, '/');
+    ptr2 = strchr(ptr1, ' ');
     *ptr2 = '\0';
-    fprintf(stdout, "[INFO]URL path: %s\n", ptr1);
-    fprintf(stdout, "\n==================================\n");
-    if(strcmp(ptr1, "/favicon.ico") == 0){
-        return NULL;
+    strcpy(request->path, ptr1);
+    *ptr2 = ' ';
+
+    fprintf(stdout, "[INFO]Request path: %s\n\n", request->path);
+    fprintf(stdout, "[INFO]Request Data:\n");
+    fprintf(stdout, "============================\n");
+    write(STDOUT_FILENO, request->request_data, c);
+    while(c > 0){
+        c = read(fd, request->request_data, REQ_SIZE);
+        write(STDOUT_FILENO, request->request_data, c);
     }
-    return ptr1;
+    fflush(stdout);
 }
 
 void server_init(http_server* serv){
     signal(SIGINT, handler);
     unsigned short method;
+    http_request request;
     char* buff = (char*)malloc(BUFF_SIZE);
-    char* request = (char*)malloc(REQ_SIZE);
+    request.request_data = (char*)malloc(REQ_SIZE);
+    request.path = (char*)malloc(PATH_SIZE);
     serv->listening_fd = create_socket(serv->ip_family, serv->trcp_protocol);
     listner_fd = serv->listening_fd;
     bind_to_port(serv->listening_fd, serv->ip_family, serv->port);
     start_listening(serv->listening_fd, serv->q_size);
-    fprintf(stdout, "[INFO]Server is listning on port: 127.0.0.1:%d\n", serv->port);
+    fprintf(stdout, "[INFO]Server is listning on port: 127.0.0.1:%d\n\n", serv->port);
     fflush(stdout);
     while(1){
         
         int cln_fd = accept_connection(serv->listening_fd);
-        char* prt = read_request(cln_fd, request, &method);
-        if(prt == NULL) continue;
-        create_response(prt, buff, cln_fd);
-        
+        read_request(cln_fd, &request, &method);
+        if(strcmp(request.path, "/favicon.ico") == 0){
+            continue;
+        }
+        create_response(request.path, buff, cln_fd);
+        close(cln_fd);
     }
 
     exit(EXIT_SUCCESS);
