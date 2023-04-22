@@ -2,12 +2,12 @@
 
 #define Q_SIZE 10
 #define BUFF_SIZE 1000
-#define REQ_SIZE 100
+#define REQ_SIZE 1000
 #define PATH_SIZE 100
 #define ROUTE_SIZE 20
 #define METHOD_SIZE 10
-#define GET 0
-#define POST 1
+#define GET 71
+#define POST 80
 
 
 typedef struct{

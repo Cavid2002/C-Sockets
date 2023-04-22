@@ -3,7 +3,8 @@
 
 
 
-int main(){
+int main()
+{
     http_server serv;
     serv.ip_family = AF_INET;
     serv.trcp_protocol = SOCK_STREAM;
