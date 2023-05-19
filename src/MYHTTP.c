@@ -1,6 +1,5 @@
 #include"MYHTTP.h"
 #include<fcntl.h>
-#include<sys/ioctl.h>
 
 http_route* arr[ROUTE_SIZE];
 int count = 0;
@@ -39,13 +38,15 @@ void create_response(char* url_path, char* buff, int cln_fd)
     {
         sprintf(temp, "templates%s", url_path);
         int front_fd = open(temp, O_RDONLY, 0700);
-        if(front_fd == -1){
+        if(front_fd == -1)
+        {
             error("File doesn't exist");
         }
         strcpy(buff, "HTTP/2.0 200 OK\r\n\r\n");
         write(cln_fd, buff, strlen(buff));
         int c = 1;
-        while(c > 0){
+        while(c > 0)
+        {
             c = read(front_fd , buff, BUFF_SIZE);
             write(cln_fd, buff, c);
         }
@@ -68,6 +69,44 @@ void create_response(char* url_path, char* buff, int cln_fd)
         }
         close(front_fd);
     }
+}
+
+
+void read_small_request(int fd, http_request* request, unsigned short* method)
+{
+    memset(request->request_data, 0, REQ_SIZE);
+    memset(request->path, 0, PATH_SIZE);
+
+
+    int c = read(fd, request->request_data, REQ_SIZE);
+    request->request_data[c] = '\0';
+    write(STDOUT_FILENO, request->request_data, c);
+    
+    char* ptr1 = strchr(request->request_data, '/');
+    char* ptr2 = strchr(ptr1, ' ');
+    *ptr2 = '\0';
+    strcpy(request->path, ptr1);
+    *ptr2 = ' ';
+
+
+    fprintf(stdout, "[INFO]Request Path: %s", request->path);
+    fprintf(stdout, "\n---------------------------------------\n");
+    fprintf(stdout, "[INFO]Request Data:\n");
+    fprintf(stdout, "\n");
+
+
+
+    if(request->request_data[0] == POST)
+    {
+        ptr1 = strstr(request->request_data, "\r\n\r\n");
+        ptr2 = strstr(ptr1 + 2, "\r\n");
+        ptr2 = '\0';
+        FILE* db = fopen(DATASTORAGE, "a");
+        fprintf(db, "%s\n", ptr1 + 4);
+        fclose(db);
+    }
+
+    return;
 }
 
 
@@ -98,6 +137,11 @@ void read_request(int fd, http_request* request, unsigned short* method)
         while(c >= REQ_SIZE - 1)
         {
             c = read(fd, request->request_data, REQ_SIZE);
+            request->request_data[c] = '\0';
+            ptr1 = strstr(request->request_data,"\r\n\r\n");
+            ptr1 = ptr1 + 4;
+            ptr2 = strstr(request->request_data,"\r\n");
+            
             write(STDOUT_FILENO, request->request_data, c);
 
         }
@@ -138,16 +182,29 @@ void server_init(http_server* serv)
     fflush(stdout);
     while(1)
     {
-        int cln_fd = accept_connection(serv->listening_fd);
-        
-        read_request(cln_fd, &request, &method);
-        if(strcmp(request.path, "/favicon.ico") == 0){
-            continue;
+        sockaddr_in client_addr;
+        int cln_fd = accept_connection(serv->listening_fd, &client_addr);
+        pid_t id = fork();
+        if(id == 0)
+        {   
+            printf("\n----------------------------------------\n");
+            printf("[INFO]connected ip address:%s\n", inet_ntoa(client_addr.sin_addr));
+            printf("[INFO]connected port:%d\n", ntohs(client_addr.sin_port));
+            printf("\n----------------------------------------\n");
+    
+            close(serv->listening_fd);
+            read_small_request(cln_fd, &request, &method);
+            if(strcmp(request.path, "/favicon.ico") == 0)
+            {
+                continue;
+            }
+            create_response(request.path, buff, cln_fd);
+            close(cln_fd);
+            exit(EXIT_SUCCESS);
         }
-        create_response(request.path, buff, cln_fd);
-        
+
         close(cln_fd);
-        
+
     }
 
     exit(EXIT_SUCCESS);

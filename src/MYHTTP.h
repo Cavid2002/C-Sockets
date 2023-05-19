@@ -1,7 +1,7 @@
 #include"MYNET.h"
 
 #define Q_SIZE 10
-#define BUFF_SIZE 1000
+#define BUFF_SIZE 3000
 #define REQ_SIZE 1000
 #define PATH_SIZE 100
 #define ROUTE_SIZE 20
@@ -9,6 +9,8 @@
 #define GET 71
 #define POST 80
 
+
+#define DATASTORAGE "db.txt"
 
 typedef struct{
     unsigned int ip_family;
@@ -36,5 +38,5 @@ extern int count;
 void server_init(http_server* serv);
 void create_route(http_route* rt);
 void read_request(int fd, http_request* request, unsigned short* method);
+void read_small_request(int fd, http_request* request, unsigned short* method);
 void create_response(char* url_path, char* buff, int cln_fd);
-

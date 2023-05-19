@@ -37,10 +37,9 @@ int bind_to_port(int fd, unsigned int family, unsigned short port){
     }
 }
 
-int accept_connection(int fd){
-    sockaddr_storage client_addr;
-    unsigned int addr_size = sizeof(client_addr);
-    int cd = accept(fd, (sockaddr*)&client_addr, &addr_size);
+int accept_connection(int fd, sockaddr_in* client_addr){
+    unsigned int addr_size = sizeof(sockaddr_in);
+    int cd = accept(fd, (sockaddr*)client_addr, &addr_size);
     if(cd == -1){
         error("Unable to connect");
     }

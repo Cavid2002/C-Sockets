@@ -26,8 +26,8 @@ int bind_to_port(int fd, unsigned int family, unsigned short port);
 int start_listening(int fd, int num);
 
 //returns fd for communication
-int accept_connection(int fd);
+int accept_connection(int fd, sockaddr_in* client_addr);
 
 
-//for client returns nothing 
+//for client returns nothing useful
 int connect_to_port(int fd, int ip_family, unsigned short port, const char* ip_addr);

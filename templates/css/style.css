@@ -2,6 +2,10 @@
     color: white;
 }
 
+ul,ol{
+    list-style: none;
+}
+
 body {
     background-color: #2d2d31;
     margin: 0;
@@ -67,6 +71,21 @@ button:hover{
     background: #2d2d31;
     color: white !important;
     
+}
+
+.links li{
+    padding: 5px 0;
+}
+
+.links a{
+    text-decoration: none;
+    font-size: 25px;
+    font-weight: bold;
+    color: white;
+}
+
+.links a:hover{
+    color: rgb(72, 194, 47);
 }
 
 @media (max-width: 700px) {
